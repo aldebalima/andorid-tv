@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Controle Remoto - Smart TV</title>
+    <link rel="stylesheet" href="remote.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div class="remote-container">
+        <!-- Header -->
+        <header class="remote-header">
+            <h1>Controle Remoto</h1>
+            <div class="connection-status" id="connectionStatus">
+                <span class="status-dot"></span>
+                <span>Conectando...</span>
+            </div>
+        </header>
+
+        <!-- Apps rápidos -->
+        <section class="quick-apps">
+            <h2>Aplicativos</h2>
+            <div class="app-buttons">
+                <button class="app-btn netflix" data-app="netflix">
+                    <span class="app-icon">N</span>
+                    <span class="app-label">Netflix</span>
+                </button>
+                <button class="app-btn hbo" data-app="hbo">
+                    <span class="app-icon">H</span>
+                    <span class="app-label">HBO</span>
+                </button>
+                <button class="app-btn prime" data-app="prime">
+                    <span class="app-icon">P</span>
+                    <span class="app-label">Prime</span>
+                </button>
+                <button class="app-btn disney" data-app="disney">
+                    <span class="app-icon">D</span>
+                    <span class="app-label">Disney+</span>
+                </button>
+                <button class="app-btn youtube" data-app="youtube">
+                    <span class="app-icon">Y</span>
+                    <span class="app-label">YouTube</span>
+                </button>
+                <button class="app-btn spotify" data-app="spotify">
+                    <span class="app-icon">S</span>
+                    <span class="app-label">Spotify</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Controle direcional -->
+        <section class="d-pad-section">
+            <h2>Navegação</h2>
+            <div class="d-pad-container">
+                <div class="d-pad">
+                    <button class="d-btn up" data-direction="up">↑</button>
+                    <div class="d-pad-middle">
+                        <button class="d-btn left" data-direction="left">←</button>
+                        <button class="d-btn center" data-direction="select">OK</button>
+                        <button class="d-btn right" data-direction="right">→</button>
+                    </div>
+                    <button class="d-btn down" data-direction="down">↓</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Botões de ação -->
+        <section class="action-buttons">
+            <button class="action-btn home-btn" data-action="home">
+                <span class="btn-icon">🏠</span>
+                <span class="btn-label">Home</span>
+            </button>
+            <button class="action-btn back-btn" data-action="back">
+                <span class="btn-icon">←</span>
+                <span class="btn-label">Voltar</span>
+            </button>
+        </section>
+
+        <!-- Instruções -->
+        <section class="instructions">
+            <p>Conecte-se à mesma rede Wi-Fi do notebook</p>
+            <p class="ip-info">IP do servidor: <span id="serverIP">Carregando...</span></p>
+        </section>
+    </div>
+
+    <script src="remote-controller.js"></script>
+</body>
+</html>

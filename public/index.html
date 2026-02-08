@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV dos Lima</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs2@0.0.2/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="tv-container">
+        <!-- Barra de navegação superior -->
+        <nav class="top-nav">
+            <div class="nav-content">
+                <div class="nav-left">
+                    <h1 class="tv-logo">TV dos Lima</h1>
+                    <div class="datetime" id="datetime">
+                        <span id="date"></span>
+                        <span id="time"></span>
+                    </div>
+                </div>
+                <div class="connection-status" id="connectionStatus">
+                    <span class="status-dot"></span>
+                    <span>Conectado</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Área principal com iframe -->
+        <div class="main-content">
+            <div class="iframe-container" id="iframeContainer">
+                <div class="home-screen" id="homeScreen">
+                    <!-- Painel de imagens de fundo -->
+                    <div class="wallpaper-panel" id="wallpaperPanel">
+                        <div class="wallpaper-slide active"></div>
+                        <div class="wallpaper-slide"></div>
+                        <div class="wallpaper-slide"></div>
+                    </div>
+                    
+                    <div class="home-content">
+                        <h2 class="welcome-title">Bem-vindo à TV dos Lima</h2>
+                        <p class="welcome-subtitle">Use o controle remoto no celular para navegar</p>
+                        <div class="info-banner">
+                            <p>ℹ️ Os aplicativos abrem em nova janela devido a restrições de segurança</p>
+                        </div>
+                        <div class="app-grid" id="appGrid">
+                            <!-- Apps serão inseridos aqui via JavaScript -->
+                        </div>
+                        
+                        <!-- QR Codes para apps de controle -->
+                        <div class="qr-section">
+                            <p class="qr-label">📱 Baixe o app de controle remoto</p>
+                            <div class="qr-codes-container">
+                                <div class="qr-code-item">
+                                    <p class="qr-app-label">Android (Play Store)</p>
+                                    <div id="qrcode-playstore"></div>
+                                </div>
+                                <div class="qr-code-item">
+                                    <p class="qr-app-label">iOS (App Store)</p>
+                                    <div id="qrcode-appstore"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <iframe id="contentFrame" style="display: none;" allowfullscreen></iframe>
+            </div>
+        </div>
+
+        <!-- Overlay de loading -->
+        <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+            <div class="spinner"></div>
+            <p>Carregando...</p>
+        </div>
+
+        <!-- Mensagem de erro -->
+        <div class="error-message" id="errorMessage" style="display: none;">
+            <p>Erro ao carregar conteúdo. Abrindo em nova janela...</p>
+        </div>
+        
+        <!-- Banner de notícias no rodapé -->
+        <footer class="news-footer">
+            <div class="news-ticker">
+                <span class="news-label">📰 Notícias:</span>
+                <div class="news-content" id="newsContent">
+                    <div class="news-item">Carregando notícias...</div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="tv-controller.js"></script>
+    <script src="datetime.js"></script>
+    <script src="news-ticker.js"></script>
+</body>
+</html>

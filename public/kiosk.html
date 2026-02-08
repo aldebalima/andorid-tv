@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiosk Mode</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #000;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p id="loadingText">Carregando aplicativo...</p>
+    </div>
+    <iframe id="kioskFrame" allowfullscreen></iframe>
+    
+    <script>
+        // Obter URL do parâmetro
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetUrl = urlParams.get('url');
+        const appName = decodeURIComponent(urlParams.get('app') || 'Aplicativo');
+        
+        // Atualizar título e texto de loading
+        document.title = `${appName} - TV dos Lima`;
+        document.getElementById('loadingText').textContent = `Carregando ${appName}...`;
+        
+        // Função para tentar entrar em fullscreen
+        const tryFullscreen = () => {
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log('Fullscreen requer interação do usuário');
+                });
+            } else if (document.documentElement.webkitRequestFullscreen) {
+                document.documentElement.webkitRequestFullscreen();
+            } else if (document.documentElement.mozRequestFullScreen) {
+                document.documentElement.mozRequestFullScreen();
+            } else if (document.documentElement.msRequestFullscreen) {
+                document.documentElement.msRequestFullscreen();
+            }
+        };
+        
+        if (targetUrl) {
+            const iframe = document.getElementById('kioskFrame');
+            const loading = document.getElementById('loading');
+            
+            // Decodificar URL se necessário
+            const decodedUrl = decodeURIComponent(targetUrl);
+            
+            // Verificar se a URL é válida
+            if (!decodedUrl || !decodedUrl.startsWith('http')) {
+                loading.innerHTML = `
+                    <p style="color: #f44336; margin-bottom: 20px;">URL inválida</p>
+                    <p style="font-size: 14px;">Por favor, tente novamente.</p>
+                `;
+                return;
+            }
+            
+            let hasLoaded = false;
+            let loadTimeout = null;
+            
+            // Função para redirecionar diretamente se iframe falhar
+            function redirectDirectly() {
+                if (!hasLoaded) {
+                    console.log('Redirecionando diretamente para:', decodedUrl);
+                    window.location.href = decodedUrl;
+                }
+            }
+            
+            // Tentar carregar no iframe
+            try {
+                iframe.src = decodedUrl;
+            } catch (e) {
+                console.error('Erro ao definir src do iframe:', e);
+                redirectDirectly();
+                return;
+            }
+            
+            // Tentar fullscreen ao carregar
+            iframe.onload = () => {
+                hasLoaded = true;
+                if (loadTimeout) clearTimeout(loadTimeout);
+                loading.style.display = 'none';
+                // Aguardar um pouco antes de tentar fullscreen
+                setTimeout(tryFullscreen, 500);
+            };
+            
+            // Tratar erro do iframe
+            iframe.onerror = () => {
+                console.error('Erro ao carregar iframe');
+                if (!hasLoaded) {
+                    redirectDirectly();
+                }
+            };
+            
+            // Timeout: se não carregar em 5 segundos, redirecionar diretamente
+            loadTimeout = setTimeout(() => {
+                if (!hasLoaded) {
+                    console.log('Timeout: redirecionando diretamente');
+                    loading.innerHTML = `
+                        <p style="color: #ff9800; margin-bottom: 20px;">Redirecionando para ${appName}...</p>
+                    `;
+                    redirectDirectly();
+                }
+            }, 5000);
+            
+            // Tentar fullscreen após um clique (requer interação do usuário em alguns navegadores)
+            document.addEventListener('click', tryFullscreen, { once: true });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    tryFullscreen();
+                }
+            }, { once: true });
+            
+            // Detectar se o iframe foi bloqueado (X-Frame-Options, etc)
+            // Isso pode ser detectado verificando se o iframe carregou mas está vazio
+            setTimeout(() => {
+                if (!hasLoaded) {
+                    try {
+                        // Tentar acessar o conteúdo (pode falhar por CORS)
+                        const frameDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        if (frameDoc && frameDoc.body && frameDoc.body.innerHTML.trim() === '') {
+                            console.log('Iframe bloqueado, redirecionando diretamente');
+                            redirectDirectly();
+                        }
+                    } catch (e) {
+                        // Erro de CORS - pode ser que o iframe esteja bloqueado
+                        console.log('Possível bloqueio de iframe detectado:', e.message);
+                        // Não redirecionar imediatamente, aguardar o timeout
+                    }
+                }
+            }, 3000);
+        } else {
+            document.getElementById('loading').innerHTML = '<p style="color: #f44336;">URL não fornecida</p>';
+        }
+        
+        // Controles de teclado
+        document.addEventListener('keydown', (e) => {
+            // F11 para alternar fullscreen
+            if (e.key === 'F11') {
+                e.preventDefault();
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                } else {
+                    tryFullscreen();
+                }
+            }
+            // ESC para fechar (opcional - pode ser desabilitado)
+            // if (e.key === 'Escape' && !document.fullscreenElement) {
+            //     window.close();
+            // }
+        });
+        
+        // Detectar mudanças no fullscreen
+        document.addEventListener('fullscreenchange', () => {
+            console.log('Fullscreen:', document.fullscreenElement ? 'Ativo' : 'Inativo');
+        });
+        
+        document.addEventListener('webkitfullscreenchange', () => {
+            console.log('Fullscreen:', document.webkitFullscreenElement ? 'Ativo' : 'Inativo');
+        });
+    </script>
+</body>
+</html>
